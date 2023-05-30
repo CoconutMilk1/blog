@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人博客</title>
+    <link rel="shortcut icon" href="blog.ico">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/register.css">
+    <link rel="stylesheet" href="plugins/element-plus.css" />
+    <script src="js/domain.js"></script>
+    <script src="plugins/axios.js"></script>
+    <script src="plugins/vue3.js"></script>
+    <script src="plugins/js-cookie.js"></script>
+    <script src="plugins/element-plus.js"></script>
+</head>
+
+<body>
+    <div id="Register">
+        <h1>注册界面</h1>
+        <form @submit.prevent="register">
+            <div class="form-group">
+                <label for="account">
+                    <img id="accountImg" src="img/account.png">
+                    账号:
+                </label>
+                <input type="text" name="account" v-model="registerFrom.account" placeholder="请输入账号" required />
+            </div>
+            <div class="form-group">
+                <label for="password">
+                    <img class="passwordImg" src="img/remember.png">
+                    密码:
+                </label>
+                <input type="password" name="password" v-model="registerFrom.password" placeholder="请输入密码" required />
+            </div>
+            <div class="form-group">
+                <label for="password">
+                    <img class="passwordImg" src="img/remember.png">
+                    密码:
+                </label>
+                <input type="password" name="confirmPassword" v-model="registerFrom.confirmPassword" placeholder="请再次输入密码"
+                    required />
+            </div>
+            <div class="form-group">
+                <button type="submit">注册</button>
+            </div>
+            <div class="form-group">
+                <a id="forget" href="">忘记密码</a>
+                <a id="login" href="login.html">已有账号?点击登录</a>
+            </div>
+
+        </form>
+    </div>
+    <script>
+        const Register = {
+            data() {
+                return {
+                    autoLogin: {},
+                    registerFrom: {
+                        account: '',
+                        password: '',
+                        confirmPassword: '',
+                    },
+                };
+            },
+            methods: {
+                register() {
+                    if (this.registerFrom.password === this.registerFrom.confirmPassword) {
+                        _this = this;
+                        // TODO: Implement login logic here
+                        axios.post('http://localhost:8080/user/register', {
+                            account: this.registerFrom.account,
+                            password: this.registerFrom.password,
+                        }).then(resp => {
+                            const code = resp.data.code;
+                            if (code === 1) {
+                                localStorage.setItem('userInfo', JSON.stringify(resp.data.data));
+                                window.location.href = "index.html";
+                            } else {
+                                console.log(resp.data.msg);
+                                alert(resp.data.msg)
+                            }
+                        }).catch(error => {
+                            console.log(error);
+                        })
+                    } else {
+                        alert("两次输入密码不一致")
+                    }
+                },
+            },
+            
+        };
+        Vue.createApp(Register).mount('#Register');
+    </script>
+
+</body>
+
+</html>

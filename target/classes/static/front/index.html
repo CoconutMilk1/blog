@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人博客</title>
+    <link rel="shortcut icon" href="blog.ico">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="plugins/element-plus.css"/>
+    <script src="js/domain.js"></script>
+    <script src="plugins/axios.js"></script>
+    <script src="plugins/js-cookie.js"></script>
+    <script src="plugins/vue3.js"></script>
+    <script src="plugins/element-plus.js"></script>
+</head>
+
+<body>
+<div id="index">
+    <!-- 头 -->
+    <header class="large-header">
+        <!-- 固定导航栏 -->
+        <div class="header-wrapper">
+            <!-- logo -->
+            <div class="logo">
+                <a href="">个人博客</a>
+            </div>
+            <!-- 导航栏 -->
+            <div class="left">
+                <ul>
+                    <li>
+                        <span class="nav at-item" href="">导航</span>
+                    </li>
+                    <li>
+                        <span class="help at-item" href="">帮助</span>
+                    </li>
+                    <li>
+                        <span class="attion at-item" href="">关注我们</span>
+                    </li>
+                </ul>
+            </div>
+            <!-- 搜索 -->
+            <div class="center">
+                <!-- 搜索栏 -->
+                <div class="search-bar">
+                    <form class="search-form">
+                        <input type="text" placeholder="搜索感兴趣的内容">
+                        <a href=""></a>
+                    </form>
+                </div>
+                <!-- 搜索记录 -->
+                <div>
+
+                </div>
+            </div>
+            <!-- 个人信息 -->
+            <div class="right">
+                <ul class="right-entry">
+                    <li>
+                        <el-dropdown style="border: 0px;height: 64px;width: 64px;">
+                            <!-- <el-icon  class="el-icon--right"> -->
+                            <div style="padding:16px;height: 64px;width: 64px;" aria-expanded="false">
+                                <el-avatar style="text-align: center;height: 32px;width: 32px;" :src="avatar"/>
+                            </div>
+                            <!-- </el-icon> -->
+                            <template v-slot:dropdown>
+                                <el-dropdown-menu>
+                                    <el-dropdown-item @click="sign">签到({{points}}积分)</el-dropdown-item>
+                                    <el-dropdown-item @click="myArticle">我的文章</el-dropdown-item>
+                                    <el-dropdown-item @click="updateInfo">个人信息修改</el-dropdown-item>
+                                    <el-dropdown-item @click="logout">注销</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </template>
+                        </el-dropdown>
+
+                    </li>
+                    <li>
+                        <a class="at-item" id="homepage" href="index.html">
+                            主页
+                        </a>
+                    </li>
+                    <li>
+                        <a class="at-item" id="release" href="submitArticle.html">
+                            发布
+                        </a>
+                    </li>
+                    <li>
+                        <span class="at-item" @click="orderByTime">
+                            归档
+                        </span>
+                    </li>
+                    <li>
+                        <a class="at-item" href="">
+                            分类
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <section class="container">
+        <section class="left" id="articles">
+            <article v-for="article in articles">
+                <a class="article-left">
+                    <img v-bind:src="article.firstPicture" alt="">
+                </a>
+                <div class="article-right">
+                    <a class="title" href="article.html" :id="article.id" @click="showArticle">{{article.title}}</a>
+                    <span class="info">
+                            <img src="img/calendar.png">
+                            发表于:{{article.createTime}}&nbsp|&nbsp
+                            <img src="img/category.png">
+                            {{article.categoryName}}
+                        </span>
+                    <span class="content">{{article.content}}</span>
+                    <div class="operation">
+                        <div class="support">
+                            <img src="img/support.png" alt="">
+                            <span class="support">{{article.support}}&nbsp赞</span>
+                        </div>
+                        <div class="oppose">
+                            <img src="img/oppose.png" alt="">
+                            <span class="step-on">{{article.oppose}}&nbsp踩</span>
+                        </div>
+                        <span class="author">作者:{{article.createUserName}}</span>
+                    </div>
+                </div>
+            </article>
+        </section>
+        <section class="right">
+
+        </section>
+    </section>
+</div>
+
+<script>
+    const index = Vue.createApp({
+        data() {
+            return {
+                page: 0,
+                pageSize: 10,
+                title: '',//查询文章的标题
+                articles: {},
+                id: '',//自己的id
+                name: '',
+                avatar: 'uploads/avatar/avatar.png',
+                points: '0',
+                categories: {},
+            }
+        },
+        mounted() {
+            //获取浏览器存储的个人信息
+            const userInfo = window.localStorage.getItem('userInfo');
+            if (userInfo) {
+                this.userInfo = JSON.parse(userInfo);
+                this.id = this.userInfo.id;
+                this.name = this.userInfo.name;
+                this.avatar = this.userInfo.avatar;
+                console.log(this.avatar);
+            }
+            //页面加载完成后,发送异步请求,查询数据,
+            axios.get('http://localhost:8080/article/title', {
+                withCredentials: true,
+                params: {
+                    page: this.page,
+                    pageSize: this.pageSize,
+                    // title: this.title,
+                }
+            }).then(resp => {
+                const code = resp.data.code;
+                if (code === 1) {
+                    this.articles = resp.data.data.records;
+                } else {
+                    console.log(resp.data.msg);
+                    alert(resp.data.msg);
+                }
+            }).catch(error => {
+                console.log(error);
+            })
+            axios.get('http://localhost:8080/user/points', {
+                params: {
+                    id: this.id,
+                }
+            }).then(resp => {
+                const code = resp.data.code;
+                if (code === 1) {
+                    this.points = resp.data.data;
+                    this.userInfo.points = this.points;
+                } else {
+                    console.log(resp.data.msg);
+                    alert(resp.data.msg)
+                }
+            }).catch(error => {
+                console.log(error);
+            })
+        },
+        methods: {
+            sign() {
+                axios.put('http://localhost:8080/sign/' + this.id).then(resp => {
+                    const code = resp.data.code;
+                    if (code === 1) {
+                        alert(resp.data.data)
+                    } else {
+                        console.log(resp.data.msg);
+                        alert(resp.data.msg)
+                    }
+                }).catch(error => {
+                    console.log(error);
+                })
+                axios.get('http://localhost:8080/user/points', {
+                    params: {
+                        id: this.id,
+                    }
+                }).then(resp => {
+                    const code = resp.data.code;
+                    if (code === 1) {
+                        this.points = resp.data.data;
+                        this.userInfo.points = this.points;
+                    } else {
+                        console.log(resp.data.msg);
+                        alert(resp.data.msg)
+                    }
+                }).catch(error => {
+                    console.log(error);
+                })
+            },
+            myArticle() {
+                axios.get('http://localhost:8080/article/uid', {
+                    params: {
+                        uid: this.id,
+                        page: this.page,
+                        pageSize: this.pageSize,
+                    }
+                }).then(resp => {
+                    const code = resp.data.code;
+                    if (code === 1) {
+                        this.articles = resp.data.data.records;
+                    } else {
+                        console.log(resp.data.msg);
+                        alert(resp.data.msg)
+                    }
+                }).catch(error => {
+                    console.log(error);
+                })
+
+            },
+            updateInfo() {
+                window.location.href = "updateInfo.html";
+            },
+            logout() {
+                axios.post('http://localhost:8080/user/logout').then(resp => {
+                    const code = resp.data.code;
+                    if (code === 1) {
+                        localStorage.removeItem('userInfo');
+                        localStorage.removeItem('autoLogin');
+                        window.location.href = "login.html";
+                    }
+                })
+            },
+            showArticle() {
+                let target = event.currentTarget;
+                localStorage.setItem('articleId', JSON.stringify(target.id));
+            },
+            orderByTime() {
+                axios.get('http://localhost:8080/article/orderByTime', {
+                    params: {
+                        uid: this.id,
+                        page: this.page,
+                        pageSize: this.pageSize,
+                    }
+                }).then(resp => {
+                    const code = resp.data.code;
+                    if (code === 1) {
+                        this.articles = resp.data.data.records;
+                    } else {
+                        console.log(resp.data.msg);
+                        alert(resp.data.msg)
+                    }
+                }).catch(error => {
+                    console.log(error);
+                })
+            },
+        },
+    })
+    index.use(ElementPlus).mount('#index')
+
+</script>
+</body>
+
+</html>

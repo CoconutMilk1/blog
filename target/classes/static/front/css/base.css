@@ -1,0 +1,43 @@
+/* 默认样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Helvetica, "PingFang SC", "Microsoft Yahei", sans-serif;
+    font-size: 24px;
+}
+
+img {
+    width: 100%;
+}
+
+a {
+    text-decoration: none;
+    color: var(--text-color-dark);
+}
+
+li {
+    list-style: none;
+    display: inline-block;
+}
+input{
+    outline: none;
+}
+.at-item:hover {
+    animation-name: bounce-top;
+    animation-duration: 0.25s;
+    color: #36ad6a;
+    
+}
+@keyframes bounce-top {
+        
+    0% {
+        transform:translateY(0);
+    }
+    50% {
+        transform:translateY(-8px);
+    }
+    100% {
+        transform:translateY(0);
+    }
+}
